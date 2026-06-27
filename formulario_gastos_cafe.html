@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar Gasto · Café al Paso</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#3CBBB3;--teal-d:#277A76;--teal-l:#E8F6F5;
+  --copper:#B8832A;--copper-l:#FDF4E7;
+  --red:#C0392B;--red-l:#FEF3F2;
+  --ink:#1A2827;--ink2:#3E5453;--ink3:#7A9897;
+  --bg:#EEF2F1;--white:#fff;--border:#DCE6E5;
+  --r:12px;--rs:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
+.header{background:var(--teal);padding:18px 24px;position:relative}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--copper)}
+.header-brand .name{font-size:18px;font-weight:800;color:#fff}
+.header-brand .sub{font-size:11px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+.main{padding:20px;max-width:520px;margin:0 auto}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.fg{margin-bottom:14px}
+.fg:last-child{margin-bottom:0}
+label{font-size:12px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;font-size:14px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);color:var(--ink);font-family:inherit;transition:border-color .15s}
+input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+input.err,select.err{border-color:var(--red);background:var(--red-l)}
+.err-msg{font-size:11px;color:var(--red);margin-top:4px;display:none;font-weight:500}
+.err-msg.on{display:block}
+.resumen{background:var(--teal-l);border:1px solid rgba(29,158,117,.2);border-radius:var(--rs);padding:14px 16px;margin-bottom:16px}
+.resumen-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.resumen-row .lbl{color:var(--ink2)}
+.resumen-row .val{font-weight:700;color:var(--ink)}
+.resumen-row.total .val{color:var(--teal-d);font-size:16px}
+.btn{width:100%;padding:14px;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;border:none;background:var(--copper);color:#fff;font-family:inherit;transition:background .15s}
+.btn:hover{background:#9A6B1F}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:var(--rs);font-size:13px;font-weight:500;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--teal-d)}
+.toast.error{background:var(--red)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.success-view{display:none;text-align:center;padding:40px 20px}
+.success-icon{font-size:48px;margin-bottom:12px}
+.success-title{font-size:20px;font-weight:800;color:var(--teal-d);margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--ink2);margin-bottom:24px}
+.btn-nuevo{background:var(--teal-l);color:var(--teal-d);border:2px solid rgba(29,158,117,.3);border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;width:100%;font-family:inherit}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="name">Café al Paso</div>
+    <div class="sub">Registrar gasto</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div id="form-view">
+    <div class="card">
+      <div class="card-title">📋 Datos del gasto</div>
+
+      <div class="fg">
+        <label>Fecha <span style="color:var(--teal)">*</span></label>
+        <input type="date" id="f-fecha">
+        <div class="err-msg" id="e-fecha">Selecciona una fecha.</div>
+      </div>
+
+      <div class="fg">
+        <label>Detalle <span style="color:var(--teal)">*</span></label>
+        <input type="text" id="f-detalle" placeholder="Ej: Harina, Huevos, Arriendo local...">
+        <div class="err-msg" id="e-detalle">Ingresa un detalle.</div>
+      </div>
+
+      <div class="fg">
+        <label>Categoría <span style="color:var(--teal)">*</span></label>
+        <select id="f-categoria">
+          <option value="">Selecciona una categoría</option>
+          <option>INGREDIENTES</option>
+          <option>UTENSILIOS</option>
+          <option>PREVIRED</option>
+          <option>PUBLICIDAD</option>
+          <option>MAQUINARIA</option>
+          <option>CONTABILIDAD</option>
+          <option>MATERIALES</option>
+          <option>SUELDO</option>
+          <option>SERVICIOS</option>
+        </select>
+        <div class="err-msg" id="e-categoria">Selecciona una categoría.</div>
+      </div>
+
+      <div class="fg">
+        <label>Monto bruto <span style="color:var(--teal)">*</span></label>
+        <input type="number" id="f-monto" placeholder="0" min="0" step="1" oninput="actualizarResumen()">
+        <div class="err-msg" id="e-monto">Ingresa un monto válido.</div>
+      </div>
+    </div>
+
+    <!-- Resumen calculado -->
+    <div class="resumen" id="resumen" style="display:none">
+      <div class="resumen-row"><span class="lbl">Monto bruto</span><span class="val" id="r-bruto">$0</span></div>
+      <div class="resumen-row"><span class="lbl">IVA (19%)</span><span class="val" id="r-iva">$0</span></div>
+      <div class="resumen-row total"><span class="lbl">Monto neto</span><span class="val" id="r-neto">$0</span></div>
+    </div>
+
+    <button class="btn" id="btn-submit" onclick="enviarGasto()">Registrar gasto</button>
+  </div>
+
+  <div class="success-view" id="success-view">
+    <div class="success-icon">✅</div>
+    <div class="success-title">¡Gasto registrado!</div>
+    <div class="success-sub" id="success-sub"></div>
+    <button class="btn-nuevo" onclick="resetForm()">← Registrar otro gasto</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FINANZAS_URL = 'https://script.google.com/macros/s/AKfycbw7yVUngQXeuBzxHlmdLfMxZkua_XsPqP4AJPq_KX_24ymVPcXWBOs8OxfsxwzxgQnMfA/exec';
+
+// Setear fecha de hoy por defecto
+document.getElementById('f-fecha').value = new Date().toISOString().slice(0, 10);
+
+const fmt = n => '$' + Math.round(n).toLocaleString('es-CL');
+
+function actualizarResumen() {
+  const monto = Number(document.getElementById('f-monto').value);
+  if (monto > 0) {
+    const neto = Math.round(monto / 1.19);
+    const iva  = monto - neto;
+    document.getElementById('r-bruto').textContent = fmt(monto);
+    document.getElementById('r-iva').textContent   = fmt(iva);
+    document.getElementById('r-neto').textContent  = fmt(neto);
+    document.getElementById('resumen').style.display = 'block';
+  } else {
+    document.getElementById('resumen').style.display = 'none';
+  }
+}
+
+function toast(msg, tipo='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + tipo;
+  setTimeout(() => el.className = 'toast', 3500);
+}
+
+function validar() {
+  let ok = true;
+  const campos = [
+    { id: 'f-fecha',     err: 'e-fecha',     check: v => v !== '' },
+    { id: 'f-detalle',   err: 'e-detalle',   check: v => v.trim() !== '' },
+    { id: 'f-categoria', err: 'e-categoria', check: v => v !== '' },
+    { id: 'f-monto',     err: 'e-monto',     check: v => Number(v) > 0 },
+  ];
+  campos.forEach(c => {
+    const el  = document.getElementById(c.id);
+    const err = document.getElementById(c.err);
+    const valido = c.check(el.value);
+    el.classList.toggle('err', !valido);
+    err.classList.toggle('on', !valido);
+    if (!valido) ok = false;
+  });
+  return ok;
+}
+
+async function enviarGasto() {
+  if (!validar()) return;
+
+  const fecha     = document.getElementById('f-fecha').value;
+  const detalle   = document.getElementById('f-detalle').value.trim();
+  const categoria = document.getElementById('f-categoria').value;
+  const bruto     = Number(document.getElementById('f-monto').value);
+  const neto      = Math.round(bruto / 1.19);
+  const iva       = bruto - neto;
+
+  const btn = document.getElementById('btn-submit');
+  btn.innerHTML = '<span class="spinner"></span> Registrando…';
+  btn.disabled = true;
+
+  try {
+    await fetch(FINANZAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'nuevo_gasto',
+        fecha,
+        detalle,
+        categoria,
+        monto_bruto: bruto,
+        monto_neto:  neto,
+        iva
+      })
+    });
+
+    document.getElementById('success-sub').textContent =
+      detalle + ' · ' + categoria + ' · ' + fmt(bruto) + ' bruto';
+    document.getElementById('form-view').style.display = 'none';
+    document.getElementById('success-view').style.display = 'block';
+
+  } catch(e) {
+    toast('Error de conexión. Intenta de nuevo.', 'error');
+    btn.innerHTML = 'Registrar gasto';
+    btn.disabled = false;
+  }
+}
+
+function resetForm() {
+  document.getElementById('f-fecha').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('f-detalle').value = '';
+  document.getElementById('f-categoria').value = '';
+  document.getElementById('f-monto').value = '';
+  document.getElementById('resumen').style.display = 'none';
+  document.querySelectorAll('.err').forEach(e => e.classList.remove('err'));
+  document.querySelectorAll('.err-msg.on').forEach(e => e.classList.remove('on'));
+  const btn = document.getElementById('btn-submit');
+  btn.innerHTML = 'Registrar gasto';
+  btn.disabled = false;
+  document.getElementById('form-view').style.display = 'block';
+  document.getElementById('success-view').style.display = 'none';
+}
+</script>
+</body>
+</html>
